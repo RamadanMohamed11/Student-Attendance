@@ -1,0 +1,2 @@
+D:/Flutter 2025/student_attendance/android/app/.cxx/RelWithDebInfo/2qi4a495/x86/CMakeFiles/edit_cache.dir
+D:/Flutter 2025/student_attendance/android/app/.cxx/RelWithDebInfo/2qi4a495/x86/CMakeFiles/rebuild_cache.dir
