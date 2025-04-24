@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # student_attendance
 
 A new Flutter project.
@@ -14,3 +15,6 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+=======
+# Student-Attendance
+>>>>>>> 7e3aff72468889946a7141992499e1dc497a3f65
