@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:student_attendance/models/subject_model.dart';
 import 'package:student_attendance/models/user_model.dart';
+import 'package:student_attendance/pages/student_details_page.dart';
 import 'package:student_attendance/services/authentication_service.dart';
 
 class AbsentStudentsTableWidget extends StatefulWidget {
-  const AbsentStudentsTableWidget({super.key, required this.subjectModel});
+  const AbsentStudentsTableWidget({
+    super.key,
+    required this.subjectModel,
+    required this.selectedDate,
+  });
   final SubjectModel subjectModel;
+  final String selectedDate;
 
   @override
   State<AbsentStudentsTableWidget> createState() =>
@@ -26,11 +32,11 @@ class _AbsentStudentsTableWidgetState extends State<AbsentStudentsTableWidget> {
     return users;
   }
 
-  Future<List<String>> absentToday() async {
+  Future<List<String>> absentOnSelectedDate() async {
     List<String> attendanceList = [];
     for (UserModel user in users) {
-      bool isPresent = await AuthenticationService()
-          .isStudentAttended(widget.subjectModel.subjectCode!, user.email);
+      bool isPresent = await AuthenticationService().isStudentAttended(
+          widget.subjectModel.subjectCode!, user.email, widget.selectedDate);
       if (!isPresent) {
         attendanceList.add(user.email);
       }
@@ -42,82 +48,109 @@ class _AbsentStudentsTableWidgetState extends State<AbsentStudentsTableWidget> {
   Widget build(BuildContext context) {
     var screenSize = MediaQuery.of(context).size;
     return FutureBuilder<List<UserModel>>(
-        future: _fetchUsers(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-                child: Text('No students found',
-                    style: TextStyle(fontSize: 24.sp)));
-          } else {
-            users = snapshot.data!;
-            return FutureBuilder<List<String>>(
-                future: absentToday(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  }
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(
-                        child: Text('No students found',
-                            style: TextStyle(fontSize: 24.sp)));
-                  } else {
-                    absentStudent = snapshot.data!;
-                    return SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      scrollDirection: Axis.vertical,
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        child: SizedBox(
-                          width: screenSize.width,
-                          child: DataTable(
-                            dataRowHeight: 50.h,
-                            columnSpacing: 50.w,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10.r),
-                              color: Colors.white10,
-                            ),
-                            columns: [
-                              DataColumn(
-                                  label: Text('Name',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 23.sp))),
-                              DataColumn(
-                                  label: Text('Section',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 23.sp))),
-                            ],
-                            rows: users
-                                .where((user) =>
-                                    absentStudent.contains(user.email))
-                                .map((user) {
-                              return _buildRow(
-                                user.name,
-                                user.sectionNumber!,
-                                Colors.green.shade100,
-                                Colors.red.shade100,
-                              );
-                            }).toList(),
-                          ),
+      future: _fetchUsers(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(
+              child:
+                  Text('No students found', style: TextStyle(fontSize: 24.sp)));
+        } else {
+          users = snapshot.data!;
+          return FutureBuilder<List<String>>(
+            future: absentOnSelectedDate(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else {
+                absentStudent = snapshot.data!;
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  scrollDirection: Axis.vertical,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: screenSize.width,
+                      child: DataTable(
+                        dataRowHeight: 50.h,
+                        columnSpacing: 50.w,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10.r),
+                          color: Colors.white10,
                         ),
+                        columns: [
+                          DataColumn(
+                            label: Text(
+                              'Name',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 23.sp,
+                              ),
+                            ),
+                          ),
+                          DataColumn(
+                            label: Text(
+                              'Section',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 23.sp,
+                              ),
+                            ),
+                          ),
+                        ],
+                        rows: users
+                            .where((user) => absentStudent.contains(user.email))
+                            .map((user) {
+                          return DataRow(
+                            onSelectChanged: (selected) {
+                              if (selected == true) {
+                                // Navigate to student details page
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StudentDetailsPage(
+                                      student: user,
+                                      subjectModel: widget.subjectModel,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            cells: [
+                              DataCell(
+                                Text(
+                                  user.name,
+                                  style: TextStyle(
+                                    fontSize: 20.sp,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                              DataCell(
+                                Text(
+                                  user.sectionNumber!,
+                                  style: TextStyle(fontSize: 20.sp),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
                       ),
-                    );
-                  }
-                });
-          }
-        });
+                    ),
+                  ),
+                );
+              }
+            },
+          );
+        }
+      },
+    );
   }
 
   DataRow _buildRow(
@@ -129,15 +162,6 @@ class _AbsentStudentsTableWidgetState extends State<AbsentStudentsTableWidget> {
         studentClass,
         style: TextStyle(fontSize: 20.sp),
       )),
-      // DataCell(Container(
-      //   padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
-      //   decoration: BoxDecoration(
-      //     color: bgColor,
-      //     borderRadius: BorderRadius.circular(10.r),
-      //   ),
-      //   child:
-      //       Text(status, style: TextStyle(color: textColor, fontSize: 20.sp)),
-      // )),
     ]);
   }
 }

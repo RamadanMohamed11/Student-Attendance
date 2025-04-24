@@ -43,8 +43,16 @@ Future<void> main() async {
 
   User? user = FirebaseAuth.instance.currentUser;
   if (user != null) {
+    await user.reload(); // Ensure we have the latest verification status
+    if (!user.emailVerified) {
+      await FirebaseAuth.instance.signOut();
+      runApp(BlocProvider(
+        create: (context) => ThemeCubit(),
+        child: const LoginMaterialApp(),
+      ));
+      return;
+    }
     List<UserModel> users = await AuthenticationService().getUsers();
-
     for (UserModel userModel in users) {
       if (userModel.email == user.email) {
         if (userModel.userType == 'Student') {
@@ -81,7 +89,7 @@ class DoctorMaterialApp extends StatelessWidget {
             theme: ThemeData(
               brightness: Brightness.light,
               scaffoldBackgroundColor:
-                  kPrimaryColor, // ✅ Apply light mode background
+                  kPrimaryColor, // Apply light mode background
             ),
 
             darkTheme: ThemeData.dark(),
@@ -116,7 +124,7 @@ class StudentMaterialApp extends StatelessWidget {
             theme: ThemeData(
               brightness: Brightness.light,
               scaffoldBackgroundColor:
-                  kPrimaryColor, // ✅ Apply light mode background
+                  kPrimaryColor, // Apply light mode background
             ),
 
             darkTheme: ThemeData.dark(),
@@ -152,7 +160,7 @@ class LoginMaterialApp extends StatelessWidget {
             theme: ThemeData(
               brightness: Brightness.light,
               scaffoldBackgroundColor:
-                  kPrimaryColor, // ✅ Apply light mode background
+                  kPrimaryColor, // Apply light mode background
             ),
 
             darkTheme: ThemeData.dark(),
@@ -305,10 +313,15 @@ class SidebarItem extends StatelessWidget {
 }
 
 class AttendanceInformation extends StatelessWidget {
-  const AttendanceInformation(
-      {super.key, required this.subjectModel, required this.presentStudent});
+  const AttendanceInformation({
+    super.key,
+    required this.subjectModel,
+    required this.presentStudent,
+    required this.selectedDate,
+  });
   final SubjectModel subjectModel;
   final String presentStudent;
+  final String selectedDate;
 
   @override
   Widget build(BuildContext context) {
@@ -335,13 +348,13 @@ class AttendanceInformation extends StatelessWidget {
                                 CustomSizeTransition(
                                     TotalStudentsPage(
                                       subjectModel: subjectModel,
+                                      selectedDate: selectedDate,
                                     ),
                                     alignment: Alignment.centerLeft));
-                            // Navigator.pushNamed(context, TotalStudentsPage.id);
                           }),
                       const Spacer(),
                       DashboardCard(
-                          title: 'Present Today',
+                          title: 'Present',
                           count: presentStudent,
                           color: Colors.green,
                           icon: Icons.check_circle,
@@ -351,11 +364,9 @@ class AttendanceInformation extends StatelessWidget {
                                 CustomSizeTransition(
                                     PresentStudentsPage(
                                       subjectModel: subjectModel,
+                                      selectedDate: selectedDate,
                                     ),
                                     alignment: Alignment.centerRight));
-
-                            // Navigator.pushNamed(
-                            //     context, PresentStudentsPage.id);
                           }),
                     ],
                   ),
@@ -366,7 +377,7 @@ class AttendanceInformation extends StatelessWidget {
                     children: [
                       Expanded(
                         child: DashboardCard(
-                            title: 'Absent Today',
+                            title: 'Absent',
                             count: (subjectModel.studentList.length -
                                     int.parse(presentStudent))
                                 .toString(),
@@ -378,11 +389,9 @@ class AttendanceInformation extends StatelessWidget {
                                   CustomSizeTransition(
                                       AbsentStudentsPage(
                                         subjectModel: subjectModel,
+                                        selectedDate: selectedDate,
                                       ),
                                       alignment: Alignment.center));
-
-                              // Navigator.pushNamed(context,
-                              //     SlideTransition1(AbsentStudentsPage.id));
                             }),
                       ),
                     ],

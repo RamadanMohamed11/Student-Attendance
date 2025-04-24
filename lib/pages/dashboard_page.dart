@@ -8,6 +8,7 @@ import 'package:student_attendance/pages/settings_page.dart';
 import 'package:student_attendance/services/authentication_service.dart';
 import 'package:student_attendance/widgets/oval_right_border_clipper.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:intl/intl.dart';
 
 import '../models/subject_model.dart';
 import '../widgets/pie_chart_widget.dart';
@@ -176,112 +177,183 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-class DashboardContent extends StatelessWidget {
-  DashboardContent({
+class DashboardContent extends StatefulWidget {
+  const DashboardContent({
     super.key,
     required this.subjectModel,
   });
   final SubjectModel subjectModel;
-  List<String> presentStudent = [];
+
+  @override
+  State<DashboardContent> createState() => _DashboardContentState();
+}
+
+class _DashboardContentState extends State<DashboardContent> {
   List<UserModel> users = [];
-  Future<List<UserModel>> _fetchUsers() async {
-    List<UserModel> users = [];
-    for (String email in subjectModel.studentList) {
-      UserModel user = UserModel.fromSnapshot(
-          await AuthenticationService().getUserDataUsingEmil(email));
-      users.add(user);
-    }
-    return users;
+  List<String> presentStudents = [];
+  DateTime selectedDate = DateTime.now();
+  String formattedSelectedDate = '';
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    formattedSelectedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+    _loadData();
   }
 
-  Future<List<String>> presentToday() async {
-    List<String> attendanceList = [];
-    for (UserModel user in users) {
-      bool isPresent = await AuthenticationService()
-          .isStudentAttended(subjectModel.subjectCode!, user.email);
-      if (isPresent) {
-        attendanceList.add(user.email);
+  Future<void> _loadData() async {
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Fetch users
+      List<UserModel> fetchedUsers = [];
+      for (String email in widget.subjectModel.studentList) {
+        try {
+          final doc = await AuthenticationService().getUserDataUsingEmil(email);
+          if (doc.exists) {
+            UserModel user = UserModel.fromSnapshot(doc);
+            fetchedUsers.add(user);
+          }
+        } catch (e) {
+          print("Error fetching user data: $e");
+        }
+      }
+
+      // Check attendance for selected date
+      List<String> attendanceList = [];
+      for (UserModel user in fetchedUsers) {
+        bool isPresent = await AuthenticationService().isStudentAttended(
+            widget.subjectModel.subjectCode!,
+            user.email,
+            formattedSelectedDate);
+        if (isPresent) {
+          attendanceList.add(user.email);
+        }
+      }
+
+      // Update state if still mounted
+      if (mounted) {
+        setState(() {
+          users = fetchedUsers;
+          presentStudents = attendanceList;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Error loading data: $e");
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
       }
     }
-    return attendanceList;
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    print(
+        "Current date before selection: $selectedDate (formatted: $formattedSelectedDate)");
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2025),
+    );
+
+    print("Date picker returned: $picked");
+
+    if (picked != null && picked != selectedDate) {
+      // Format the date properly
+      final newFormattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      print("New formatted date: $newFormattedDate");
+
+      setState(() {
+        selectedDate = picked;
+        formattedSelectedDate = newFormattedDate;
+        print(
+            "State updated with date: $selectedDate (formatted: $formattedSelectedDate)");
+      });
+
+      // Make sure to call _loadData() after the state is updated
+      print("Calling _loadData() for date: $formattedSelectedDate");
+      await _loadData();
+      print(
+          "_loadData() completed for date: $formattedSelectedDate with ${presentStudents.length} present students");
+    } else {
+      print("Date selection was cancelled or same date was selected");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<UserModel>>(
-        future: _fetchUsers(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-                child: Text('No students found',
-                    style: TextStyle(fontSize: 24.sp)));
-          } else {
-            users = snapshot.data!;
-            return FutureBuilder<List<String>>(
-                future: presentToday(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(
-                        child: Text('No students found',
-                            style: TextStyle(fontSize: 24.sp)));
-                  } else {
-                    presentStudent = snapshot.data!;
-                    return SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          const SizedBox(
-                            height: 20,
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Text(
+                  widget.subjectModel.subjectName,
+                  style:
+                      TextStyle(fontSize: 26.sp, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 10.h),
+                // Date selector
+                InkWell(
+                  onTap: () => _selectDate(context),
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: kSecondaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.r),
+                      border:
+                          Border.all(color: kSecondaryColor.withOpacity(0.5)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.calendar_today, color: kSecondaryColor),
+                        SizedBox(width: 10.w),
+                        Text(
+                          DateFormat('EEEE, MMMM d, yyyy').format(selectedDate),
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.bold,
+                            color: kSecondaryColor,
                           ),
-                          Text(
-                            subjectModel.subjectName,
-                            style: TextStyle(
-                                fontSize: 26.sp, fontWeight: FontWeight.bold),
-                          ),
-                          AttendanceInformation(
-                            subjectModel: subjectModel,
-                            presentStudent: presentStudent.length.toString(),
-                          ),
-                          PieChartExample(
-                            subjectModel: subjectModel,
-                            presentStudent: presentStudent.length.toString(),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          )
-                        ],
-                      ),
-                    );
-                  }
-                });
-          }
-        });
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                // Display selected date
+                Text(
+                  "Showing attendance for: ${DateFormat('MMMM d, yyyy').format(selectedDate)}",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                AttendanceInformation(
+                  subjectModel: widget.subjectModel,
+                  presentStudent: presentStudents.length.toString(),
+                  selectedDate: formattedSelectedDate,
+                ),
+                PieChartExample(
+                  subjectModel: widget.subjectModel,
+                  presentStudent: presentStudents.length.toString(),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          );
   }
 }
-
-// class DashboardPage extends StatefulWidget {
-//   const DashboardPage({
-//     super.key,
-//   });
-
-//   @override
-//   State<DashboardPage> createState() => _DashboardPageState();
-// }
-
-// class _DashboardPageState extends State<DashboardPage> {
-//   @override
-//   Widget build(BuildContext context) {
-//     return const SingleChildScrollView(
-//       child: Column(
-//         children: [DashboardContent(), PieChartExample()],
-//       ),
-//     );
-//   }
-// }

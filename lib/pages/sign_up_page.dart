@@ -5,7 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 import '../colors.dart';
-import '../models/user_model.dart';
+
 import '../services/authentication_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/email_text_field_widget.dart';
@@ -273,17 +273,16 @@ class _SignUpPageState extends State<SignUpPage> {
                                   setState(() {
                                     isLoading = true;
                                   });
-                                  await AuthenticationService().signUp(context,
-                                      email: email!,
-                                      password: password!,
-                                      name: name!,
-                                      userType: selectedUserType);
-                                  AuthenticationService().addUser(UserModel(
-                                      name: name!,
-                                      email: email!,
-                                      userType: selectedUserType,
-                                      userSubjects: [],
-                                      sectionNumber: sectionNumber));
+                                  await AuthenticationService().signUp(
+                                    context,
+                                    email: email!,
+                                    password: password!,
+                                    name: name!,
+                                    userType: selectedUserType,
+                                    sectionNumber: selectedUserType == "Student"
+                                        ? sectionNumber
+                                        : null,
+                                  );
                                 } on FirebaseAuthException catch (e) {
                                   setState(() {
                                     isLoading = false;

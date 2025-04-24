@@ -7,6 +7,7 @@ import 'package:student_attendance/colors.dart';
 import 'package:student_attendance/models/subject_model.dart';
 import 'package:student_attendance/pages/login_page.dart';
 import 'package:student_attendance/pages/doctor_subjects_page.dart';
+import 'package:intl/intl.dart'; // Import the intl package
 
 import '../helper/my_show_dialog_function.dart';
 import '../helper/tansitions.dart';
@@ -29,18 +30,76 @@ class AuthenticationService {
       {required String name,
       required String email,
       required String password,
-      required String userType}) async {
+      required String userType,
+      String? sectionNumber}) async {
     UserCredential userCredential = await auth.createUserWithEmailAndPassword(
         email: email, password: password);
+
+    // First store the user data in Firebase
+    try {
+      UserModel userModel = UserModel(
+        name: name,
+        email: auth.currentUser!.email!,
+        userType: userType,
+        userSubjects: [],
+        sectionNumber: sectionNumber,
+      );
+      await usersCollectionReference
+          .doc(auth.currentUser!.email)
+          .set(userModel.toJson());
+    } on FirebaseException catch (e) {
+      print("Error storing user data: ${e.message}");
+      rethrow;
+    }
+
+    // Then handle email verification
     if (!userCredential.user!.emailVerified) {
+      // Show the banner first
+      final materialBanner = MaterialBanner(
+        elevation: 0,
+        surfaceTintColor: kSecondaryColor,
+        shadowColor: kSecondaryColor,
+        backgroundColor: kPrimaryColor,
+        dividerColor: kSecondaryColor,
+        forceActionsBelow: true,
+        content: SizedBox(
+          height: 150,
+          child: AwesomeSnackbarContent(
+            color: kSecondaryColor,
+            title: 'Welcome To Our Community',
+            message:
+                'Your Account will be created successfully after verification.',
+            titleTextStyle: TextStyle(
+                color: Colors.black,
+                fontSize: 22.sp,
+                fontWeight: FontWeight.bold),
+            messageTextStyle: TextStyle(
+                overflow: TextOverflow.visible,
+                color: Colors.white,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w500),
+            contentType: ContentType.success,
+            inMaterialBanner: true,
+          ),
+        ),
+        actions: const [SizedBox.shrink()],
+      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentMaterialBanner()
+        ..showMaterialBanner(
+          materialBanner,
+        );
       await userCredential.user!.sendEmailVerification();
       await myShowDialogFunction(
         context,
         "please verify your email",
+        pageToGo: LoginPage.id, // This will clear the stack when OK is pressed
       );
+      return; // Return early to prevent showing the banner and additional navigation
     }
+
+    // If already verified (unlikely), just show the banner and go to login
     final materialBanner = MaterialBanner(
-      /// need to set following properties for best effect of awesome_snackbar_content
       elevation: 0,
       surfaceTintColor: kSecondaryColor,
       shadowColor: kSecondaryColor,
@@ -63,37 +122,18 @@ class AuthenticationService {
               color: Colors.white,
               fontSize: 20.sp,
               fontWeight: FontWeight.w500),
-
-          /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
           contentType: ContentType.success,
-          // to configure for material banner
           inMaterialBanner: true,
         ),
       ),
       actions: const [SizedBox.shrink()],
     );
-
     ScaffoldMessenger.of(context)
       ..hideCurrentMaterialBanner()
       ..showMaterialBanner(
         materialBanner,
       );
-    // try {
-    //   UserModel userModel = UserModel(
-    //     bio: bio ?? "",
-    //     email: auth.currentUser!.email!,
-    //     id: userCredential.user!.uid,
-    //     name: name,
-    //     profileImg: "",
-    //   );
-    //   usersCollectionReference
-    //       .doc(userCredential.user!.uid)
-    //       .set(userModel.toJson());
-    // } on FirebaseException {
-    //   // TODO
-    //   rethrow;
-    // }
-    Navigator.pushReplacementNamed(context, LoginPage.id);
+    Navigator.pushNamedAndRemoveUntil(context, LoginPage.id, (route) => false);
   }
 
   Future<void> login(BuildContext context,
@@ -163,7 +203,28 @@ class AuthenticationService {
   }
 
   Future<DocumentSnapshot<Object?>> getUserDataUsingEmil(String email) async {
-    return await usersCollectionReference.doc(email).get();
+    // First try to get the document directly by email as ID
+    DocumentSnapshot<Object?> doc =
+        await usersCollectionReference.doc(email).get();
+
+    // If the document doesn't exist with email as ID, try to query by email field
+    if (!doc.exists) {
+      print(
+          "Document not found with ID $email, trying to query by email field");
+      QuerySnapshot querySnapshot = await usersCollectionReference
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        print("Found user by email field query: $email");
+        return querySnapshot.docs.first;
+      }
+    } else {
+      print("Found user with ID $email");
+    }
+
+    return doc;
   }
 
   Future<void> deleteSubject(String subjectID) async {
@@ -197,26 +258,75 @@ class AuthenticationService {
         await subjectsCollectionReference.doc(subjectCode).get();
     List<dynamic> studentAttendance = subjectDoc['studentAttendance'] ?? [];
 
+    // If dateTime is null, use today's date in standard format
+    String formattedDate;
+    if (dateTime == null) {
+      DateTime now = DateTime.now();
+      // Use standard YYYY-MM-DD format
+      formattedDate =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    } else {
+      // If a date was provided, standardize it if needed
+      formattedDate = dateTime;
+      if (dateTime.contains('/')) {
+        try {
+          final parts = dateTime.split('/');
+          if (parts.length == 3) {
+            final day = parts[0].padLeft(2, '0');
+            final month = parts[1].padLeft(2, '0');
+            final year = parts[2].length == 2 ? '20${parts[2]}' : parts[2];
+            formattedDate = "$year-$month-$day";
+            print("Converted date format from $dateTime to $formattedDate");
+          }
+        } catch (e) {
+          print("Error converting date format: $e");
+        }
+      }
+    }
+
+    print("Recording attendance for $studentEmail on date $formattedDate");
+
     bool studentFound = false;
     for (var student in studentAttendance) {
       if (student.containsKey(studentEmail)) {
         studentFound = true;
-        if (dateTime != null) {
-          student[studentEmail]!.add(dateTime);
-        }
+        // Always add the date, even if dateTime was null (we created a formatted date)
+        student[studentEmail]!.add(formattedDate);
         break;
       }
     }
 
     if (!studentFound) {
       studentAttendance.add({
-        studentEmail: dateTime != null ? [dateTime] : []
+        studentEmail: [formattedDate]
       });
     }
 
     subjectsCollectionReference
         .doc(subjectCode)
         .update({"studentAttendance": studentAttendance});
+
+    // Also update the attendanceDates array in the subject document
+    DocumentSnapshot subjectDocCheck =
+        await subjectsCollectionReference.doc(subjectCode).get();
+    if (subjectDocCheck.exists) {
+      final data = subjectDocCheck.data() as Map<String, dynamic>;
+      List<String> attendanceDates = [];
+
+      if (data.containsKey('attendanceDates') &&
+          data['attendanceDates'] != null) {
+        attendanceDates = List<String>.from(data['attendanceDates']);
+      }
+
+      // Add today's date to attendanceDates if not already there
+      if (!attendanceDates.contains(formattedDate)) {
+        attendanceDates.add(formattedDate);
+        await subjectsCollectionReference.doc(subjectCode).update({
+          'attendanceDates': attendanceDates,
+        });
+        print('Added attendance date to subject: $formattedDate');
+      }
+    }
   }
 
   void removeUserFromSubject(String subjectCode) {
@@ -258,23 +368,93 @@ class AuthenticationService {
     return qrCodes;
   }
 
-  Future<bool> isStudentAttended(
-      String subjectCode, String studentEmail) async {
-    DocumentSnapshot subjectDoc =
-        await subjectsCollectionReference.doc(subjectCode).get();
-    List<dynamic> studentAttendance = subjectDoc['studentAttendance'] ?? [];
+  Future<bool> isStudentAttended(String subjectCode, String studentEmail,
+      [String? specificDate]) async {
+    try {
+      print(
+          "isStudentAttended called for subject: $subjectCode, student: $studentEmail, date: $specificDate");
 
-    DateTime today = DateTime.now();
-    String todayDate = "${today.day}/${today.month}/${today.year}";
+      DocumentSnapshot subjectDoc =
+          await subjectsCollectionReference.doc(subjectCode).get();
 
-    for (var student in studentAttendance) {
-      if (student.containsKey(studentEmail)) {
-        List<dynamic> attendanceDates = student[studentEmail];
-        if (attendanceDates.contains(todayDate)) {
-          return true;
+      if (!subjectDoc.exists) {
+        print('Subject document does not exist');
+        return false;
+      }
+
+      Map<String, dynamic> subjectData =
+          subjectDoc.data() as Map<String, dynamic>;
+
+      if (!subjectData.containsKey('studentAttendance')) {
+        print('studentAttendance field does not exist in subject document');
+        return false;
+      }
+
+      List<dynamic> studentAttendance = subjectData['studentAttendance'];
+
+      // Get current date or use specified date in YYYY-MM-DD format
+      String currentDate =
+          specificDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+      print('Checking attendance for date: $currentDate');
+
+      // Check if the date is in the future
+      DateTime checkDate = DateFormat('yyyy-MM-dd').parse(currentDate);
+      DateTime now = DateTime.now();
+      DateTime today = DateTime(now.year, now.month, now.day);
+
+      if (checkDate.isAfter(today)) {
+        print('Checking attendance for a future date: $currentDate');
+        // For future dates, no one has attended yet
+        return false;
+      }
+
+      // Debug the attendance records
+      print("Student attendance records: $studentAttendance");
+
+      for (var student in studentAttendance) {
+        if (student.containsKey(studentEmail)) {
+          List<dynamic> attendanceDates = student[studentEmail];
+          print(
+              "Found attendance dates for student $studentEmail: $attendanceDates");
+
+          for (var date in attendanceDates) {
+            String standardDate = date.toString();
+
+            // Check if the date is in DD/MM/YYYY format and convert it
+            if (standardDate.contains('/')) {
+              try {
+                final parts = standardDate.split('/');
+                if (parts.length == 3) {
+                  final day = parts[0].padLeft(2, '0');
+                  final month = parts[1].padLeft(2, '0');
+                  final year =
+                      parts[2].length == 2 ? '20${parts[2]}' : parts[2];
+                  standardDate = "$year-$month-$day";
+                  print("Converted date format from $date to $standardDate");
+                }
+              } catch (e) {
+                print("Error converting date format: $e");
+              }
+            }
+
+            // Compare with the requested date
+            print("Comparing dates: '$standardDate' == '$currentDate'");
+            if (standardDate == currentDate) {
+              print('Student $studentEmail is present on $currentDate');
+              return true;
+            }
+          }
+
+          print('Student $studentEmail is absent on $currentDate');
+          return false;
         }
       }
+
+      print('Student $studentEmail not found in attendance records');
+      return false;
+    } catch (e) {
+      print('Error checking attendance: $e');
+      return false;
     }
-    return false;
   }
 }
