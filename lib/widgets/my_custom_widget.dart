@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../colors.dart';
 
@@ -13,11 +12,25 @@ class MyCustomWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SvgPicture.asset(
-          width: 100.w,
-          height: 100.h,
-          "assets/svg/1345866.svg",
-          colorFilter: ColorFilter.mode(kSecondaryColor, BlendMode.srcIn),
+        Container(
+          padding: EdgeInsets.all(10.sp),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: kSecondaryColor,
+              width: 5.w,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              "S|A",
+              style: TextStyle(
+                color: kSecondaryColor,
+                fontSize: 50.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

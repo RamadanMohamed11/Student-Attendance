@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:student_attendance/main.dart';
 import 'package:student_attendance/models/subject_model.dart';
+import 'package:student_attendance/models/user_model.dart';
 import 'package:student_attendance/services/authentication_service.dart';
 import 'package:student_attendance/widgets/oval_right_border_clipper.dart';
 import 'package:student_attendance/widgets/subject_card_widget.dart';
@@ -16,7 +17,10 @@ class StudentSubjectsPage extends StatefulWidget {
   static const String id = 'student_subjects_page';
   const StudentSubjectsPage({
     super.key,
+    required this.student,
   });
+
+  final UserModel student;
 
   @override
   State<StudentSubjectsPage> createState() => _DoctorSubjectsPageState();
@@ -107,6 +111,7 @@ class _DoctorSubjectsPageState extends State<StudentSubjectsPage> {
                 itemBuilder: (BuildContext context, int index) {
                   return SubjectCardWidget(
                     subjectModel: subjectModels[index],
+                    student: widget.student,
                     isDoctor: false,
                   );
                 },

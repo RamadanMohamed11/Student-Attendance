@@ -392,7 +392,7 @@ class _StudentDetailsPageState extends State<StudentDetailsPage> {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    '${_studentDegree.toStringAsFixed(1)} / ${widget.subjectModel.lecturesMark}',
+                    '${_studentDegree.toStringAsFixed(2)} / ${widget.subjectModel.lecturesMark}',
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.bold,

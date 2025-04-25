@@ -6,15 +6,18 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:student_attendance/colors.dart';
 import 'package:student_attendance/main.dart';
 import 'package:student_attendance/models/subject_model.dart';
+import 'package:student_attendance/models/user_model.dart';
 import 'package:student_attendance/pages/student_attendance_info.dart';
 import 'package:student_attendance/services/authentication_service.dart';
 import 'package:student_attendance/widgets/oval_right_border_clipper.dart';
 import 'package:student_attendance/widgets/theme_mode_button.dart';
 
 class StudentMarkAttendancePage extends StatefulWidget {
-  const StudentMarkAttendancePage({super.key, required this.subjectModel});
+  const StudentMarkAttendancePage(
+      {super.key, required this.subjectModel, required this.student});
 
   final SubjectModel subjectModel;
+  final UserModel student;
 
   @override
   _StudentMarkAttendancePageState createState() =>
@@ -32,7 +35,8 @@ class _StudentMarkAttendancePageState extends State<StudentMarkAttendancePage> {
     // TODO: implement initState
     super.initState();
     pages = [
-      StudentAttendanceInfo(),
+      StudentAttendanceInfo(
+          student: widget.student, subjectModel: widget.subjectModel),
       StudentMarkAttendancePage2(onDetect: onDetect)
     ];
   }
@@ -46,7 +50,7 @@ class _StudentMarkAttendancePageState extends State<StudentMarkAttendancePage> {
       if (qrText == qrCodeNow) {
         AuthenticationService().updateStudentAttendance(
           widget.subjectModel.subjectCode!,
-          FirebaseAuth.instance.currentUser!.email.toString(),
+          widget.student.email.toString(),
           '${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
         );
         if (mounted) {

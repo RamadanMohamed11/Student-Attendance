@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../colors.dart';
 import '../helper/tansitions.dart';
+import '../pages/about_page.dart';
 import '../services/authentication_service.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/email_text_field_widget.dart';
@@ -101,8 +102,157 @@ class _LoginPageState extends State<LoginPage> {
                         hintText: "Enter your password",
                         labelText: "Password",
                       ),
+                      SizedBox(height: 8.h),
+                      // Forgot Password Button
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {
+                            // Show a dialog to enter email for password reset
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                // Get the current theme brightness
+                                final isDarkMode =
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark;
+                                String resetEmail = email ?? "";
+                                return AlertDialog(
+                                  // Use theme-adaptive background color
+                                  backgroundColor: isDarkMode
+                                      ? Theme.of(context).dialogBackgroundColor
+                                      : kPrimaryColor,
+                                  title: Text(
+                                    "Reset Password",
+                                    style: TextStyle(
+                                      color: kSecondaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        "Enter your email to receive a password reset link",
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          // Use theme-adaptive text color
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.color,
+                                        ),
+                                      ),
+                                      SizedBox(height: 16.h),
+                                      TextFormField(
+                                        initialValue: resetEmail,
+                                        decoration: InputDecoration(
+                                          hintText: "Email",
+                                          // Use theme-adaptive fill color
+                                          fillColor: isDarkMode
+                                              ? Theme.of(context)
+                                                      .inputDecorationTheme
+                                                      .fillColor ??
+                                                  Colors.grey[800]
+                                              : kTextFieldColor,
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.r),
+                                            borderSide: BorderSide.none,
+                                          ),
+                                        ),
+                                        onChanged: (value) {
+                                          resetEmail = value;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: Text(
+                                        "Cancel",
+                                        style: TextStyle(
+                                          // Use theme-adaptive text color
+                                          color: isDarkMode
+                                              ? Colors.grey[400]
+                                              : Colors.black38,
+                                          fontSize: 16.sp,
+                                        ),
+                                      ),
+                                    ),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: kSecondaryColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8.r),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        if (resetEmail.isNotEmpty) {
+                                          // Get a reference to the BuildContext from the Scaffold
+                                          final navigatorContext =
+                                              Navigator.of(context);
+                                          Navigator.pop(context);
+
+                                          // Use the navigator context for showing dialogs
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                            // Pass the root context from the Scaffold
+                                            AuthenticationService()
+                                                .resetPassword(
+                                              navigatorContext.context,
+                                              resetEmail,
+                                            );
+                                          });
+                                        } else {
+                                          // Show error if email is empty
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Please enter your email address',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 14.sp,
+                                                ),
+                                              ),
+                                              backgroundColor: kSecondaryColor,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      child: Text(
+                                        "Reset",
+                                        style: TextStyle(
+                                          // Use theme-adaptive text color for the button
+                                          color: Colors.white,
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Text(
+                            "Forgot Password?",
+                            style: TextStyle(
+                              color: kSecondaryColor,
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
                       SizedBox(
-                        height: 50.h,
+                        height: 30.h,
                       ),
                       CustomButton(
                           text: "Login",
@@ -155,7 +305,7 @@ class _LoginPageState extends State<LoginPage> {
                             }
                           }),
                       SizedBox(
-                        height: 60.h,
+                        height: 15.h,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -182,6 +332,29 @@ class _LoginPageState extends State<LoginPage> {
                                   color: kSecondaryColor,
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 15.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Want to know more? ",
+                            style: TextStyle(fontSize: 16.sp),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.pushNamed(context, AboutPage.id);
+                            },
+                            child: Text(
+                              "About Us",
+                              style: TextStyle(
+                                color: kSecondaryColor,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],

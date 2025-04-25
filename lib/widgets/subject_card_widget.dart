@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:student_attendance/helper/tansitions.dart';
+import 'package:student_attendance/models/user_model.dart';
 import 'package:student_attendance/pages/dashboard_page.dart';
 import 'package:student_attendance/pages/student_mark_attendance_page.dart';
 import 'package:student_attendance/services/authentication_service.dart';
@@ -11,10 +12,14 @@ import '../models/subject_model.dart';
 
 class SubjectCardWidget extends StatelessWidget {
   const SubjectCardWidget(
-      {super.key, required this.subjectModel, required this.isDoctor});
+      {super.key,
+      required this.subjectModel,
+      required this.isDoctor,
+      this.student});
 
   final SubjectModel subjectModel;
   final bool isDoctor;
+  final UserModel? student;
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +104,10 @@ class SubjectCardWidget extends StatelessWidget {
             Navigator.push(
                 context,
                 CustomScaleTransition(
-                    StudentMarkAttendancePage(subjectModel: subjectModel),
+                    StudentMarkAttendancePage(
+                      subjectModel: subjectModel,
+                      student: student!,
+                    ),
                     alignment: Alignment.center));
           }
         },

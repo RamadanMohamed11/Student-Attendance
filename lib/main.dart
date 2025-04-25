@@ -9,6 +9,7 @@ import 'package:student_attendance/cubits/theme_cubit/theme_cubit.dart';
 import 'package:student_attendance/models/user_model.dart';
 import 'package:student_attendance/pages/login_page.dart';
 import 'package:student_attendance/pages/sign_up_page.dart';
+import 'package:student_attendance/pages/about_page.dart';
 import 'package:student_attendance/pages/doctor_subjects_page.dart';
 import 'package:student_attendance/services/authentication_service.dart';
 import 'colors.dart';
@@ -36,40 +37,55 @@ Future<void> main() async {
 
   await Hive.initFlutter();
   await Hive.openBox('settings'); // Open a box to store theme mode
-  // runApp(BlocProvider(
-  //   create: (context) => ThemeCubit(),
-  //   child: const AttendanceApp(),
-  // ));
 
-  User? user = FirebaseAuth.instance.currentUser;
-  if (user != null) {
-    await user.reload(); // Ensure we have the latest verification status
-    if (!user.emailVerified) {
-      await FirebaseAuth.instance.signOut();
+  try {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await user.reload(); // Ensure we have the latest verification status
+        if (!user.emailVerified) {
+          await FirebaseAuth.instance.signOut();
+          runApp(BlocProvider(
+            create: (context) => ThemeCubit(),
+            child: const LoginMaterialApp(),
+          ));
+          return;
+        }
+        List<UserModel> users = await AuthenticationService().getUsers();
+        for (UserModel userModel in users) {
+          if (userModel.email == user.email) {
+            if (userModel.userType == 'Student') {
+              runApp(BlocProvider(
+                create: (context) => ThemeCubit(),
+                child: StudentMaterialApp(student: userModel),
+              ));
+              break;
+            } else if (userModel.userType == 'Doctor') {
+              runApp(BlocProvider(
+                create: (context) => ThemeCubit(),
+                child: const DoctorMaterialApp(),
+              ));
+            }
+          }
+        }
+      } catch (e) {
+        print("Error reloading user: $e");
+        // If there's an error with the user token, sign out and go to login
+        await FirebaseAuth.instance.signOut();
+        runApp(BlocProvider(
+          create: (context) => ThemeCubit(),
+          child: const LoginMaterialApp(),
+        ));
+      }
+    } else {
       runApp(BlocProvider(
         create: (context) => ThemeCubit(),
         child: const LoginMaterialApp(),
       ));
-      return;
     }
-    List<UserModel> users = await AuthenticationService().getUsers();
-    for (UserModel userModel in users) {
-      if (userModel.email == user.email) {
-        if (userModel.userType == 'Student') {
-          runApp(BlocProvider(
-            create: (context) => ThemeCubit(),
-            child: const StudentMaterialApp(),
-          ));
-          break;
-        } else if (userModel.userType == 'Doctor') {
-          runApp(BlocProvider(
-            create: (context) => ThemeCubit(),
-            child: const DoctorMaterialApp(),
-          ));
-        }
-      }
-    }
-  } else {
+  } catch (e) {
+    print("Firebase initialization error: $e");
+    // Fallback to login screen if there's any Firebase error
     runApp(BlocProvider(
       create: (context) => ThemeCubit(),
       child: const LoginMaterialApp(),
@@ -97,6 +113,7 @@ class DoctorMaterialApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             routes: {
               // MarkAttendancePage.id: (context) => const MarkAttendancePage(),
+              AboutPage.id: (context) => const AboutPage(),
               SignUpPage.id: (context) => const SignUpPage(),
               LoginPage.id: (context) => const LoginPage(),
               DoctorSubjectsPage.id: (context) => const DoctorSubjectsPage(),
@@ -113,7 +130,8 @@ class DoctorMaterialApp extends StatelessWidget {
 }
 
 class StudentMaterialApp extends StatelessWidget {
-  const StudentMaterialApp({super.key});
+  const StudentMaterialApp({super.key, required this.student});
+  final UserModel student;
 
   @override
   Widget build(BuildContext context) {
@@ -132,10 +150,12 @@ class StudentMaterialApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             routes: {
               // MarkAttendancePage.id: (context) => const MarkAttendancePage(),
+              AboutPage.id: (context) => const AboutPage(),
               SignUpPage.id: (context) => const SignUpPage(),
               LoginPage.id: (context) => const LoginPage(),
               DoctorSubjectsPage.id: (context) => const DoctorSubjectsPage(),
-              StudentSubjectsPage.id: (context) => const StudentSubjectsPage(),
+              StudentSubjectsPage.id: (context) =>
+                  StudentSubjectsPage(student: student),
               // MainPage.id: (context) => const MainPage(),
             },
             initialRoute: StudentSubjectsPage.id,
@@ -168,6 +188,7 @@ class LoginMaterialApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             routes: {
               // MarkAttendancePage.id: (context) => const MarkAttendancePage(),
+              AboutPage.id: (context) => const AboutPage(),
               SignUpPage.id: (context) => const SignUpPage(),
               LoginPage.id: (context) => const LoginPage(),
               DoctorSubjectsPage.id: (context) => const DoctorSubjectsPage(),
@@ -260,6 +281,19 @@ class SidebarMenu extends StatelessWidget {
                   //   color: kSecondaryColor,
                   // ),
                   const Spacer(),
+
+                  // About Page Link
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, AboutPage.id);
+                    },
+                    child: const SidebarItem(
+                      icon: Icons.info_outline,
+                      title: 'About Us',
+                      color: Colors.blue,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
                   InkWell(
                     onTap: () {
                       Navigator.pushReplacementNamed(context, LoginPage.id);

@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -148,7 +149,7 @@ class AuthenticationService {
           if (userModel.userType == "Student") {
             Navigator.pushReplacement(
                 context,
-                CustomScaleTransition(const StudentSubjectsPage(),
+                CustomScaleTransition(StudentSubjectsPage(student: userModel),
                     alignment: Alignment.center));
           } else if (userModel.userType == "Doctor") {
             Navigator.pushReplacement(
@@ -164,13 +165,150 @@ class AuthenticationService {
       //     CustomScaleTransition(const DoctorSubjectsPage(),
       //         alignment: Alignment.center));
     } else if (!user.emailVerified) {
-      await myShowDialogFunction(context, "please verify your email");
-      Navigator.pushNamed(context, LoginPage.id);
+      await myShowDialogFunction(
+        context,
+        "please verify your email",
+        pageToGo: LoginPage.id, // This will clear the stack when OK is pressed
+      );
     }
   }
 
   Future<void> signOut() async {
     await auth.signOut();
+  }
+
+  Future<void> resetPassword(BuildContext context, String email) async {
+    try {
+      print("Attempting to send password reset email to: $email");
+
+      // Validate email format before sending
+      if (!email.contains('@')) {
+        // Show error for invalid email format using AwesomeDialog
+        if (context.mounted) {
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.error,
+            animType: AnimType.rightSlide,
+            headerAnimationLoop: false,
+            title: 'Invalid Email',
+            titleTextStyle: TextStyle(
+              color: kSecondaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 18.sp,
+            ),
+            desc: 'Please enter a valid email address.',
+            descTextStyle: TextStyle(fontSize: 16.sp),
+            btnOkOnPress: () {},
+            btnOkColor: kSecondaryColor,
+            btnOkText: 'OK',
+          ).show();
+        }
+        return;
+      }
+
+      // Send the reset email
+      await auth.sendPasswordResetEmail(email: email);
+      print("Password reset email sent successfully to: $email");
+
+      // Show success dialog using AwesomeDialog
+      if (context.mounted) {
+        print("Showing success dialog");
+
+        // Use AwesomeDialog for better visual feedback
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.success,
+          animType: AnimType.bottomSlide,
+          title: 'Password Reset',
+          titleTextStyle: TextStyle(
+            color: kSecondaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp,
+          ),
+          desc:
+              'A password reset link has been sent to your email address. Please check your inbox and follow the instructions to reset your password.',
+          descTextStyle: TextStyle(
+              fontSize: 16.sp,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+              fontWeight: FontWeight.bold),
+          btnOkOnPress: () {
+            print("OK button pressed");
+            // Navigate to login page
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              LoginPage.id,
+              (route) => false,
+            );
+          },
+          btnOkColor: kSecondaryColor,
+          btnOkText: 'OK',
+          buttonsTextStyle: TextStyle(
+            fontSize: 17.sp,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+          dismissOnTouchOutside: false,
+        ).show();
+      }
+    } on FirebaseAuthException catch (e) {
+      print("FirebaseAuthException: ${e.code} - ${e.message}");
+      String errorMessage = "Failed to send password reset email.";
+
+      if (e.code == 'user-not-found') {
+        errorMessage = "No user found with this email address.";
+      } else if (e.code == 'invalid-email') {
+        errorMessage = "Please enter a valid email address.";
+      } else if (e.code == 'too-many-requests') {
+        errorMessage = "Too many password reset attempts. Please try again later or contact support if you need immediate assistance.";
+      }
+
+      if (context.mounted) {
+        print("Showing error dialog: $errorMessage");
+
+        // Show error using AwesomeDialog
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          animType: AnimType.rightSlide,
+          title: 'Error',
+          titleTextStyle: TextStyle(
+            color: kSecondaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp,
+          ),
+          desc: errorMessage,
+          descTextStyle: TextStyle(fontSize: 16.sp),
+          btnOkOnPress: () {},
+          btnOkColor: kSecondaryColor,
+          btnOkText: 'OK',
+        ).show();
+      }
+    } catch (e) {
+      print("General exception: $e");
+      if (context.mounted) {
+        print("Showing general error dialog");
+
+        // Show error using AwesomeDialog
+        AwesomeDialog(
+          context: context,
+          dialogType: DialogType.error,
+          animType: AnimType.rightSlide,
+          title: 'Error',
+          titleTextStyle: TextStyle(
+            color: kSecondaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 18.sp,
+          ),
+          desc: "An error occurred. Please try again later.",
+          descTextStyle: TextStyle(fontSize: 16.sp),
+          btnOkOnPress: () {},
+          btnOkColor: kSecondaryColor,
+          btnOkText: 'OK',
+        ).show();
+      }
+    }
   }
 
   void addSubject(SubjectModel subjectModel) async {
