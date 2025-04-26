@@ -10,10 +10,10 @@ import '../widgets/theme_mode_button.dart';
 
 class StudentDetailsPage extends StatefulWidget {
   const StudentDetailsPage({
-    Key? key,
+    super.key,
     required this.student,
     required this.subjectModel,
-  }) : super(key: key);
+  });
 
   static const String id = 'student_details_page';
   final UserModel student;

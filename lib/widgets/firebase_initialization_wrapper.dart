@@ -8,11 +8,11 @@ class FirebaseInitializationWrapper extends StatelessWidget {
   final String? errorMessage;
 
   const FirebaseInitializationWrapper({
-    Key? key,
+    super.key,
     required this.child,
     required this.isFirebaseInitialized,
     this.errorMessage,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,8 @@ class FirebaseInitializationWrapper extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
-                  errorMessage ?? 'Unable to connect to Firebase. Please check your internet connection and try again.',
+                  errorMessage ??
+                      'Unable to connect to Firebase. Please check your internet connection and try again.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16),
                 ),
@@ -55,8 +56,8 @@ class FirebaseInitializationWrapper extends StatelessWidget {
                 onPressed: () {
                   // Reload the page
                   Navigator.pushNamedAndRemoveUntil(
-                    context, 
-                    '/', 
+                    context,
+                    '/',
                     (route) => false,
                   );
                 },

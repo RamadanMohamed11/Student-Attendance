@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class ChatPage extends StatefulWidget {
   static const String id = 'chat_page';
 
-  const ChatPage({Key? key}) : super(key: key);
+  const ChatPage({super.key});
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -27,7 +27,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   final ChatUser _botUser = ChatUser(id: '2', firstName: 'Gemini AI');
 
   // DashChat messages
-  List<ChatMessage> _messages = [];
+  final List<ChatMessage> _messages = [];
 
   @override
   void initState() {

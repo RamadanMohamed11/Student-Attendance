@@ -16,7 +16,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
   final String? role;
 
   const TeamMemberDetailsPage({
-    Key? key,
+    super.key,
     required this.name,
     required this.avatarPlaceholder,
     this.imagePath,
@@ -26,7 +26,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
     this.portfolioUrl,
     this.bio,
     this.role,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

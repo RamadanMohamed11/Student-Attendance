@@ -7,7 +7,7 @@ import 'package:student_attendance/widgets/theme_mode_button.dart';
 class AboutPage extends StatelessWidget {
   static const String id = 'about_page';
 
-  const AboutPage({Key? key}) : super(key: key);
+  const AboutPage({super.key});
 
   @override
   Widget build(BuildContext context) {

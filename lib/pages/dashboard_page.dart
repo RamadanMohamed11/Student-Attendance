@@ -53,8 +53,12 @@ class _DashboardPageState extends State<DashboardPage> {
         lastDate: DateTime(2050),
       ).then((DateTime? value) {
         if (value != null) {
-          dateSelected = value;
-          print(dateSelected);
+          setState(() {
+            dateSelected = value;
+            // Update the DashboardContent state using the static key
+            DashboardContent.dashboardContentKey.currentState
+                ?.updateSelectedDate(value);
+          });
         }
       });
     }
@@ -178,10 +182,11 @@ class _DashboardPageState extends State<DashboardPage> {
 }
 
 class DashboardContent extends StatefulWidget {
-  const DashboardContent({
-    super.key,
-    required this.subjectModel,
-  });
+  DashboardContent({required this.subjectModel})
+      : super(key: dashboardContentKey);
+  static final GlobalKey<_DashboardContentState> dashboardContentKey =
+      GlobalKey<_DashboardContentState>();
+
   final SubjectModel subjectModel;
 
   @override
@@ -194,6 +199,14 @@ class _DashboardContentState extends State<DashboardContent> {
   DateTime selectedDate = DateTime.now();
   String formattedSelectedDate = '';
   bool isLoading = false;
+
+  void updateSelectedDate(DateTime newDate) {
+    setState(() {
+      selectedDate = newDate;
+      formattedSelectedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+      _loadData();
+    });
+  }
 
   @override
   void initState() {
@@ -210,6 +223,8 @@ class _DashboardContentState extends State<DashboardContent> {
     });
 
     try {
+      print("Loading data for date: $formattedSelectedDate");
+
       // Fetch users
       List<UserModel> fetchedUsers = [];
       for (String email in widget.subjectModel.studentList) {
@@ -231,6 +246,8 @@ class _DashboardContentState extends State<DashboardContent> {
             widget.subjectModel.subjectCode!,
             user.email,
             formattedSelectedDate);
+        print(
+            "Student ${user.email} is present on $formattedSelectedDate: $isPresent");
         if (isPresent) {
           attendanceList.add(user.email);
         }
@@ -332,16 +349,16 @@ class _DashboardContentState extends State<DashboardContent> {
                     ),
                   ),
                 ),
-                SizedBox(height: 10.h),
+                // SizedBox(height: 10.h),
                 // Display selected date
-                Text(
-                  "Showing attendance for: ${DateFormat('MMMM d, yyyy').format(selectedDate)}",
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.grey[600],
-                  ),
-                ),
+                // Text(
+                //   "Showing attendance for: ${DateFormat('MMMM d, yyyy').format(selectedDate)}",
+                //   style: TextStyle(
+                //     fontSize: 14.sp,
+                //     fontStyle: FontStyle.italic,
+                //     color: Colors.grey[600],
+                //   ),
+                // ),
                 AttendanceInformation(
                   subjectModel: widget.subjectModel,
                   presentStudent: presentStudents.length.toString(),

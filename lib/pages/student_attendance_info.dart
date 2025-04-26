@@ -11,10 +11,10 @@ import '../services/authentication_service.dart';
 
 class StudentAttendanceInfo extends StatefulWidget {
   const StudentAttendanceInfo({
-    Key? key,
+    super.key,
     required this.student,
     required this.subjectModel,
-  }) : super(key: key);
+  });
 
   static const String id = 'student_attendance_info';
   final UserModel student;

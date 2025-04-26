@@ -424,11 +424,42 @@ class AuthenticationService {
     print("Recording attendance for $studentEmail on date $formattedDate");
 
     bool studentFound = false;
+    bool dateAlreadyRecorded = false;
+    
     for (var student in studentAttendance) {
       if (student.containsKey(studentEmail)) {
         studentFound = true;
-        // Always add the date, even if dateTime was null (we created a formatted date)
-        student[studentEmail]!.add(formattedDate);
+        List<dynamic> dates = student[studentEmail];
+        
+        // Check if this date is already recorded for this student
+        for (var existingDate in dates) {
+          String standardExistingDate = existingDate.toString();
+          
+          // Convert existing date to standard format if needed
+          if (standardExistingDate.contains('/')) {
+            try {
+              final parts = standardExistingDate.split('/');
+              if (parts.length == 3) {
+                final day = parts[0].padLeft(2, '0');
+                final month = parts[1].padLeft(2, '0');
+                final year = parts[2].length == 2 ? '20${parts[2]}' : parts[2];
+                standardExistingDate = "$year-$month-$day";
+              }
+            } catch (e) {
+              print("Error converting existing date format: $e");
+            }
+          }
+          
+          if (standardExistingDate == formattedDate) {
+            dateAlreadyRecorded = true;
+            break;
+          }
+        }
+        
+        // Only add the date if it's not already recorded
+        if (!dateAlreadyRecorded) {
+          student[studentEmail]!.add(formattedDate);
+        }
         break;
       }
     }
@@ -439,9 +470,12 @@ class AuthenticationService {
       });
     }
 
-    subjectsCollectionReference
-        .doc(subjectCode)
-        .update({"studentAttendance": studentAttendance});
+    // Only update if changes were made
+    if (!studentFound || !dateAlreadyRecorded) {
+      subjectsCollectionReference
+          .doc(subjectCode)
+          .update({"studentAttendance": studentAttendance});
+    }
 
     // Also update the attendanceDates array in the subject document
     DocumentSnapshot subjectDocCheck =
@@ -582,6 +616,7 @@ class AuthenticationService {
             }
           }
 
+          // If we've checked all dates and none match, the student is absent
           print('Student $studentEmail is absent on $currentDate');
           return false;
         }
