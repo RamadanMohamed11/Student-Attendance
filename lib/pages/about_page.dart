@@ -105,6 +105,7 @@ class AboutPage extends StatelessWidget {
                 context,
                 name: 'Ramadan Mohamed',
                 avatarPlaceholder: 'RM',
+                imagePath: 'assets/images/Ramadan.jpg',
               ),
 
               SizedBox(height: 16.h),
@@ -113,6 +114,7 @@ class AboutPage extends StatelessWidget {
                 context,
                 name: 'Hesham Ahmed',
                 avatarPlaceholder: 'HA',
+                imagePath: 'assets/images/Hesham.jpg',
               ),
 
               SizedBox(height: 16.h),

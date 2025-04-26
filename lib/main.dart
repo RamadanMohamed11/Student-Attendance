@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:student_attendance/cubits/theme_cubit/theme_cubit.dart';
 import 'package:student_attendance/models/user_model.dart';
+import 'package:student_attendance/pages/chat_page.dart';
 import 'package:student_attendance/pages/login_page.dart';
 import 'package:student_attendance/pages/sign_up_page.dart';
 import 'package:student_attendance/pages/about_page.dart';
@@ -117,6 +118,7 @@ class DoctorMaterialApp extends StatelessWidget {
               SignUpPage.id: (context) => const SignUpPage(),
               LoginPage.id: (context) => const LoginPage(),
               DoctorSubjectsPage.id: (context) => const DoctorSubjectsPage(),
+              ChatPage.id: (context) => const ChatPage(),
               // MainPage.id: (context) => const MainPage(),
             },
             initialRoute: DoctorSubjectsPage.id,
@@ -156,6 +158,7 @@ class StudentMaterialApp extends StatelessWidget {
               DoctorSubjectsPage.id: (context) => const DoctorSubjectsPage(),
               StudentSubjectsPage.id: (context) =>
                   StudentSubjectsPage(student: student),
+              ChatPage.id: (context) => const ChatPage(),
               // MainPage.id: (context) => const MainPage(),
             },
             initialRoute: StudentSubjectsPage.id,
@@ -192,6 +195,7 @@ class LoginMaterialApp extends StatelessWidget {
               SignUpPage.id: (context) => const SignUpPage(),
               LoginPage.id: (context) => const LoginPage(),
               DoctorSubjectsPage.id: (context) => const DoctorSubjectsPage(),
+              ChatPage.id: (context) => const ChatPage(),
               // MainPage.id: (context) => const MainPage(),
             },
             initialRoute: LoginPage.id,
@@ -281,6 +285,19 @@ class SidebarMenu extends StatelessWidget {
                   //   color: kSecondaryColor,
                   // ),
                   const Spacer(),
+
+                  // Chat Page Link
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushNamed(context, ChatPage.id);
+                    },
+                    child: const SidebarItem(
+                      icon: Icons.chat_bubble_outline,
+                      title: 'AI Assistant',
+                      color: Colors.green,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
 
                   // About Page Link
                   InkWell(

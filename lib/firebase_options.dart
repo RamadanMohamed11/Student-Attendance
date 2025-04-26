@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '513701854891',
     projectId: 'student-attendance-manag-3bbc4',
     storageBucket: 'student-attendance-manag-3bbc4.firebasestorage.app',
+    iosClientId: '513701854891-ju2av0rn8oiui894grlpa76lht01cgeo.apps.googleusercontent.com',
     iosBundleId: 'com.example.studentAttendance',
   );
 
@@ -73,6 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '513701854891',
     projectId: 'student-attendance-manag-3bbc4',
     storageBucket: 'student-attendance-manag-3bbc4.firebasestorage.app',
+    iosClientId: '513701854891-ju2av0rn8oiui894grlpa76lht01cgeo.apps.googleusercontent.com',
     iosBundleId: 'com.example.studentAttendance',
   );
 
@@ -85,4 +87,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'student-attendance-manag-3bbc4.firebasestorage.app',
     measurementId: 'G-JF51Q2LHYT',
   );
+
 }
