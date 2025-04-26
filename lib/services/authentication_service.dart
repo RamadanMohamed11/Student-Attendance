@@ -387,7 +387,6 @@ class AuthenticationService {
     subjectsCollectionReference.doc(subjectCode).update({
       "studentList": FieldValue.arrayUnion([auth.currentUser!.email])
     });
-    updateStudentAttendance(subjectCode, auth.currentUser!.email!, null);
   }
 
   void updateStudentAttendance(

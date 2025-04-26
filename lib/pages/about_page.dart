@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:student_attendance/colors.dart';
+import 'package:student_attendance/pages/team_member_details_page.dart';
+import 'package:student_attendance/widgets/theme_mode_button.dart';
 
 class AboutPage extends StatelessWidget {
   static const String id = 'about_page';
@@ -14,18 +16,15 @@ class AboutPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white, size: 30.sp),
+        centerTitle: true,
+        backgroundColor: kAppBarColor,
         title: Text(
           'About Us',
           style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+              color: kTextColor, fontWeight: FontWeight.w700, fontSize: 22.sp),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
+        actions: const [ThemeModeButton()],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -106,6 +105,12 @@ class AboutPage extends StatelessWidget {
                 name: 'Ramadan Mohamed',
                 avatarPlaceholder: 'RM',
                 imagePath: 'assets/images/Ramadan.jpg',
+                role: 'Electrical Engineer',
+                linkedinUrl:
+                    'https://www.linkedin.com/in/ramadan-mohamed-31624a220/',
+                facebookUrl: 'https://www.facebook.com/elking.medo611',
+                whatsappNumber: '+201065728564',
+                portfolioUrl: 'https://ramadanmohamed.dev',
               ),
 
               SizedBox(height: 16.h),
@@ -115,6 +120,9 @@ class AboutPage extends StatelessWidget {
                 name: 'Hesham Ahmed',
                 avatarPlaceholder: 'HA',
                 imagePath: 'assets/images/Hesham.jpg',
+                role: 'Electrical Engineer',
+                linkedinUrl: 'https://www.linkedin.com/in/hesham-ahmed/',
+                facebookUrl: 'https://www.facebook.com/hesham.ahmed',
               ),
 
               SizedBox(height: 16.h),
@@ -123,6 +131,7 @@ class AboutPage extends StatelessWidget {
                 context,
                 name: 'Haitham Salah',
                 avatarPlaceholder: 'HS',
+                role: 'Electrical Engineer',
               ),
               SizedBox(height: 16.h),
 
@@ -130,6 +139,7 @@ class AboutPage extends StatelessWidget {
                 context,
                 name: 'Saad Mohamed',
                 avatarPlaceholder: 'SM',
+                role: 'Electrical Engineer',
               ),
 
               SizedBox(height: 32.h),
@@ -236,103 +246,142 @@ class AboutPage extends StatelessWidget {
     required String name,
     required String avatarPlaceholder,
     String? imagePath,
+    String? linkedinUrl,
+    String? facebookUrl,
+    String? whatsappNumber,
+    String? portfolioUrl,
+    String? bio,
+    String? role,
   }) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(16.sp),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[850] : Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Avatar
-          Hero(
-            tag: name,
-            child: Container(
-              width: 80.w,
-              height: 80.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [kSecondaryColor, Colors.blue],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: kSecondaryColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: imagePath != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(40.r),
-                      child: Image.asset(
-                        imagePath,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : Center(
-                      child: Text(
-                        avatarPlaceholder,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TeamMemberDetailsPage(
+              name: name,
+              avatarPlaceholder: avatarPlaceholder,
+              imagePath: imagePath,
+              linkedinUrl: linkedinUrl,
+              facebookUrl: facebookUrl,
+              whatsappNumber: whatsappNumber,
+              portfolioUrl: portfolioUrl,
+              bio: bio,
+              role: role ?? 'Team Member',
             ),
           ),
-          SizedBox(width: 16.w),
-          // Name and Role
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+        );
+      },
+      borderRadius: BorderRadius.circular(16.r),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(16.sp),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[850] : Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Hero(
+              tag: name,
+              child: Container(
+                width: 80.w,
+                height: 80.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [kSecondaryColor, Colors.blue],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ),
-                SizedBox(height: 4.h),
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star,
-                      size: 16.sp,
-                      color: Colors.amber,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      'Team Member',
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: kSecondaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              ],
+                child: imagePath != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(40.r),
+                        child: Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Center(
+                        child: Text(
+                          avatarPlaceholder,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+              ),
             ),
-          ),
-        ],
+            SizedBox(width: 16.w),
+            // Name and Role
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  SizedBox(height: 8.h),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.star,
+                            size: 16.sp,
+                            color: Colors.amber,
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            role ?? 'Team Member',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16.sp,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
