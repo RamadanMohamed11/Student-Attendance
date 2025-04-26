@@ -110,7 +110,7 @@ class AboutPage extends StatelessWidget {
                     'https://www.linkedin.com/in/ramadan-mohamed-31624a220/',
                 facebookUrl: 'https://www.facebook.com/elking.medo611',
                 whatsappNumber: '+201065728564',
-                portfolioUrl: 'https://ramadanmohamed.dev',
+                portfolioUrl: 'https://ramadan-mohamed-portfolio.netlify.app/',
               ),
 
               SizedBox(height: 16.h),
@@ -123,6 +123,7 @@ class AboutPage extends StatelessWidget {
                 role: 'Electrical Engineer',
                 linkedinUrl: 'https://www.linkedin.com/in/hesham-ahmed/',
                 facebookUrl: 'https://www.facebook.com/hesham.ahmed',
+                whatsappNumber: '+201208073136',
               ),
 
               SizedBox(height: 16.h),
@@ -132,6 +133,7 @@ class AboutPage extends StatelessWidget {
                 name: 'Haitham Salah',
                 avatarPlaceholder: 'HS',
                 role: 'Electrical Engineer',
+                whatsappNumber: '+201212633931',
               ),
               SizedBox(height: 16.h),
 
@@ -140,6 +142,7 @@ class AboutPage extends StatelessWidget {
                 name: 'Saad Mohamed',
                 avatarPlaceholder: 'SM',
                 role: 'Electrical Engineer',
+                whatsappNumber: '+201557401222',
               ),
 
               SizedBox(height: 32.h),

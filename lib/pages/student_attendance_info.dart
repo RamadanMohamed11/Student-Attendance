@@ -265,7 +265,7 @@ class _StudentAttendanceInfoState extends State<StudentAttendanceInfo> {
               style: TextStyle(
                 fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
+                color: kSecondaryColor,
               ),
             ),
           ),
@@ -274,7 +274,6 @@ class _StudentAttendanceInfoState extends State<StudentAttendanceInfo> {
               value,
               style: TextStyle(
                 fontSize: 16.sp,
-                color: Colors.black87,
               ),
             ),
           ),
