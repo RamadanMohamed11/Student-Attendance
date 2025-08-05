@@ -6,8 +6,6 @@ import 'package:student_attendance/colors.dart';
 
 import '../models/user_model.dart';
 import '../models/subject_model.dart';
-import '../widgets/theme_mode_button.dart';
-import '../services/authentication_service.dart';
 
 class StudentAttendanceInfo extends StatefulWidget {
   const StudentAttendanceInfo({

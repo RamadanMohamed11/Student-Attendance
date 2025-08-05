@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:student_attendance/colors.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:student_attendance/utils/url_launcher.dart';
 
 class TeamMemberDetailsPage extends StatelessWidget {
   final String name;
@@ -197,7 +197,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
                             context,
                             icon: FontAwesomeIcons.linkedin,
                             color: const Color(0xFF0077B5),
-                            onTap: () => _launchUrl(linkedinUrl!),
+                            onTap: () => myLaunchUrl(linkedinUrl!),
                           ),
 
                         // Facebook
@@ -206,7 +206,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
                             context,
                             icon: FontAwesomeIcons.facebook,
                             color: const Color(0xFF1877F2),
-                            onTap: () => _launchUrl(facebookUrl!),
+                            onTap: () => myLaunchUrl(facebookUrl!),
                           ),
 
                         // WhatsApp
@@ -215,7 +215,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
                             context,
                             icon: FontAwesomeIcons.whatsapp,
                             color: const Color(0xFF25D366),
-                            onTap: () => _launchUrl(
+                            onTap: () => myLaunchUrl(
                                 'https://wa.me/${whatsappNumber!.replaceAll(RegExp(r'[^0-9]'), '')}'),
                           ),
 
@@ -225,7 +225,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
                             context,
                             icon: FontAwesomeIcons.globe,
                             color: Colors.purple,
-                            onTap: () => _launchUrl(portfolioUrl!),
+                            onTap: () => myLaunchUrl(portfolioUrl!),
                           ),
                       ],
                     ),
@@ -238,14 +238,14 @@ class TeamMemberDetailsPage extends StatelessWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         if (whatsappNumber != null) {
-                          _launchUrl(
+                          myLaunchUrl(
                               'https://wa.me/${whatsappNumber!.replaceAll(RegExp(r'[^0-9]'), '')}');
                         } else if (linkedinUrl != null) {
-                          _launchUrl(linkedinUrl!);
+                          myLaunchUrl(linkedinUrl!);
                         } else if (facebookUrl != null) {
-                          _launchUrl(facebookUrl!);
+                          myLaunchUrl(facebookUrl!);
                         } else if (portfolioUrl != null) {
-                          _launchUrl(portfolioUrl!);
+                          myLaunchUrl(portfolioUrl!);
                         }
                       },
                       icon: const Icon(Icons.email_outlined),
@@ -310,14 +310,5 @@ class TeamMemberDetailsPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      debugPrint('Could not launch $url: $e');
-    }
   }
 }

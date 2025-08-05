@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:student_attendance/colors.dart';
 import 'package:student_attendance/pages/team_member_details_page.dart';
+import 'package:student_attendance/utils/url_launcher.dart';
 import 'package:student_attendance/widgets/theme_mode_button.dart';
 
 class AboutPage extends StatelessWidget {
@@ -89,7 +90,7 @@ class AboutPage extends StatelessWidget {
               SizedBox(height: 8.h),
 
               Text(
-                'The brilliant minds behind this application',
+                'The brilliant mind behind this application',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16.sp,
@@ -105,7 +106,7 @@ class AboutPage extends StatelessWidget {
                 name: 'Ramadan Mohamed',
                 avatarPlaceholder: 'RM',
                 imagePath: 'assets/images/Ramadan.jpg',
-                role: 'Electrical Engineer',
+                role: 'Electrical Engineer & Flutter Developer',
                 linkedinUrl:
                     'https://www.linkedin.com/in/ramadan-mohamed-31624a220/',
                 facebookUrl: 'https://www.facebook.com/elking.medo611',
@@ -113,37 +114,38 @@ class AboutPage extends StatelessWidget {
                 portfolioUrl: 'https://ramadan-mohamed-portfolio.netlify.app/',
               ),
 
-              SizedBox(height: 16.h),
+              // SizedBox(height: 16.h),
 
-              _buildTeamMember(
-                context,
-                name: 'Hesham Ahmed',
-                avatarPlaceholder: 'HA',
-                imagePath: 'assets/images/Hesham.jpg',
-                role: 'Electrical Engineer',
-                linkedinUrl: 'https://www.linkedin.com/in/hesham-ahmed/',
-                facebookUrl: 'https://www.facebook.com/hesham.ahmed',
-                whatsappNumber: '+201208073136',
-              ),
+              // _buildTeamMember(
+              //   context,
+              //   name: 'Hesham Ahmed',
+              //   avatarPlaceholder: 'HA',
+              //   imagePath: 'assets/images/Hesham.jpg',
+              //   role: 'Electrical Engineer',
+              //   linkedinUrl:
+              //       'https://www.linkedin.com/in/hesham-ahmed-mahmoud-774075293',
+              //   whatsappNumber: '+201208073136',
+              // ),
 
-              SizedBox(height: 16.h),
+              // SizedBox(height: 16.h),
 
-              _buildTeamMember(
-                context,
-                name: 'Haitham Salah',
-                avatarPlaceholder: 'HS',
-                role: 'Electrical Engineer',
-                whatsappNumber: '+201212633931',
-              ),
-              SizedBox(height: 16.h),
+              // _buildTeamMember(
+              //   context,
+              //   name: 'Haitham Salah',
+              //   avatarPlaceholder: 'HS',
+              //   role: 'Electrical Engineer',
+              //   whatsappNumber: '+201212633931',
+              // ),
+              // SizedBox(height: 16.h),
 
-              _buildTeamMember(
-                context,
-                name: 'Saad Mohamed',
-                avatarPlaceholder: 'SM',
-                role: 'Electrical Engineer',
-                whatsappNumber: '+201557401222',
-              ),
+              // _buildTeamMember(
+              //   context,
+              //   name: 'Saad Mohamed',
+              //   avatarPlaceholder: 'SM',
+              //   imagePath: 'assets/images/Saad.jpg',
+              //   role: 'Electrical Engineer',
+              //   whatsappNumber: '+201557401222',
+              // ),
 
               SizedBox(height: 32.h),
 
@@ -200,8 +202,7 @@ class AboutPage extends StatelessWidget {
                     context,
                     icon: Icons.email,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Email functionality not available')));
+                      myLaunchUrl('mailto:ramadan.work010@gmail.com');
                     },
                   ),
                   SizedBox(width: 16.w),
@@ -209,9 +210,8 @@ class AboutPage extends StatelessWidget {
                     context,
                     icon: Icons.language,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content:
-                              Text('Website functionality not available')));
+                      myLaunchUrl(
+                          'https://ramadan-mohamed-portfolio.netlify.app/');
                     },
                   ),
                   SizedBox(width: 16.w),
@@ -219,8 +219,8 @@ class AboutPage extends StatelessWidget {
                     context,
                     icon: Icons.phone,
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('Phone functionality not available')));
+                      myLaunchUrl(
+                          'https://wa.me/${"+201065728564".replaceAll(RegExp(r'[^0-9]'), '')}');
                     },
                   ),
                 ],
@@ -362,13 +362,17 @@ class AboutPage extends StatelessWidget {
                             color: Colors.amber,
                           ),
                           SizedBox(width: 4.w),
-                          Text(
-                            role ?? 'Team Member',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              color: isDarkMode
-                                  ? Colors.grey[400]
-                                  : Colors.grey[700],
+                          SizedBox(
+                            width: 150.w,
+                            child: Text(
+                              role ?? 'Team Member',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[700],
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
